@@ -3,8 +3,12 @@ package nosql.workshop.batch.mongodb;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
+import org.elasticsearch.index.analysis.CharMatcher;
 
 import java.io.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 /**
  * Importe les 'installations' dans MongoDB.
@@ -35,7 +39,29 @@ public class InstallationsImporter {
                 .substring(1, line.length() - 1)
                 .split("\",\"");
 
-        // TODO créez le document à partir de la ligne CSV
-        return new BasicDBObject();
+        BasicDBObject installation = new BasicDBObject();
+
+        installation.append("_id", columns[1]);
+        installation.append("nom", columns[0]);
+
+        BasicDBObject adresse = new BasicDBObject();
+        adresse.append("numero", columns[6]);
+        adresse.append("voie", columns[7]);
+        adresse.append("lieuDit", columns[5]);
+        adresse.append("codePostal", columns[4]);
+        adresse.append("commune", columns[2]);
+        installation.append("adresse", adresse);
+
+        BasicDBObject location = new BasicDBObject();
+        location.append("type", "Point");
+        location.append("coordinates", columns[8]);
+        installation.append("location", location);
+
+        installation.append("multiCommune", columns[16].equals("Oui"));
+        installation.append("nbPlacesParking", columns[17]);
+        installation.append("nbPlacesParkingHandicapes", columns[18]);
+        installation.append("dateMiseAJourFiche", columns.length >= 29 ? columns[28] : "");
+
+        return installation;
     }
 }
