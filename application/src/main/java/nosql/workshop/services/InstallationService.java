@@ -7,6 +7,7 @@ import org.jongo.MongoCollection;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -45,9 +46,12 @@ public class InstallationService {
      * @return la liste des installations.
      */
     public List<Installation> list(int page, int pageSize) {
-        List<Installation> installs = new ArrayList<>();
-        installations.find("{}", installs);
-       return installs;
+        Iterable<Installation> iterable = installations.find().skip(pageSize*page).limit(pageSize).as(Installation.class);
+
+        List<Installation> installations = new ArrayList<>();
+        iterable.forEach(installations::add);
+
+        return installations;
     }
 
     /**
@@ -75,6 +79,7 @@ public class InstallationService {
      *
      * @return l'installation avec le plus d'équipements.
      */
+    // $project:{nbEquipements:{$size:'$equipements'},nom:1,equipements:1}}
     public Installation installationWithMaxEquipments() {
         // TODO codez le service
         return installations.findOne("{$query: {}, $orderby: {equipements.$size: -1}}").as(Installation.class);
