@@ -54,7 +54,7 @@ public class InstallationsImporter {
 
         BasicDBObject location = new BasicDBObject();
         location.append("type", "Point");
-        location.append("coordinates", columns[8]);
+        location.append("coordinates", columns[8].substring(1, columns[8].length() -1).split(","));
         installation.append("location", location);
 
         installation.append("multiCommune", columns[16].equals("Oui"));
