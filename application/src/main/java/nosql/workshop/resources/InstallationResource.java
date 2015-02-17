@@ -92,9 +92,9 @@ public class InstallationResource {
     public InstallationsStats stats() {
         InstallationsStats stats = new InstallationsStats();
         stats.setTotalCount(installationService.count());
-        //stats.setCountByActivity(installationService.countByActivity());
+        //stats.setCountByActivity(installationService.countByActivity()); // TODO A réactiver une fois le service fait
         stats.setInstallationWithMaxEquipments(installationService.installationWithMaxEquipments());
-        //stats.setAverageEquipmentsPerInstallation(installationService.averageEquipmentsPerInstallation());
+        //stats.setAverageEquipmentsPerInstallation(installationService.averageEquipmentsPerInstallation()); // TODO A réactiver une fois le service fait
         return stats;
     }
 }

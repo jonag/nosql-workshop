@@ -7,7 +7,6 @@ import org.jongo.MongoCollection;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -96,9 +95,9 @@ public class InstallationService {
                     "}" +
                 "}"
             ).and(
-                    "{" +
-                        "$limit : 1" +
-                    "}"
+                "{" +
+                    "$limit : 1" +
+                "}"
             ).as(Installation.class);
 
         return iterable.iterator().next();
