@@ -2,6 +2,7 @@ package nosql.workshop.services;
 
 import com.google.inject.Inject;
 import nosql.workshop.model.Installation;
+import nosql.workshop.model.stats.Average;
 import nosql.workshop.model.stats.CountByActivity;
 import org.jongo.MongoCollection;
 
@@ -122,9 +123,9 @@ public class InstallationService {
                 "$unwind: \"$equipements\"" +
             "},"
         ).and(
-            "{" +
-                "$unwind: \"$equipements.activites\"" +
-            "},"
+                "{" +
+                        "$unwind: \"$equipements.activites\"" +
+                        "},"
         ).and(
             "{" +
                 "$group: {" +
@@ -147,9 +148,19 @@ public class InstallationService {
         return countByActivities;
     }
 
+    /*
+     * see http://docs.mongodb.org/manual/reference/operator/aggregation/group/#group-by-null
+     */
     public double averageEquipmentsPerInstallation() {
-        // TODO codez le service
-        throw new UnsupportedOperationException();
+        Iterable<Average> average = installations.aggregate(
+                "{\n" +
+                        "    $group : {\n" +
+                        "       _id : null,\n" +
+                        "       average: { $avg: {$size : \"$equipements\" }}\n" +
+                        "    }\n" +
+                        "  }"
+        ).as(Average.class);
+        return average.iterator().next().getAverage();
     }
 
     /**
