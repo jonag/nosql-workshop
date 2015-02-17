@@ -6,7 +6,12 @@ import com.mongodb.DBObject;
 import org.elasticsearch.index.analysis.CharMatcher;
 
 import java.io.*;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
@@ -60,7 +65,15 @@ public class InstallationsImporter {
         installation.append("multiCommune", columns[16].equals("Oui"));
         installation.append("nbPlacesParking", columns[17]);
         installation.append("nbPlacesParkingHandicapes", columns[18]);
-        installation.append("dateMiseAJourFiche", columns.length >= 29 ? columns[28] : "");
+        if (columns.length >= 29) {
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+            try {
+                Date date = format.parse(columns[28]);
+                installation.append("dateMiseAJourFiche", date);
+            } catch (ParseException e) {
+                System.out.println("Date au mauvais format (ignorée) : " + columns[28]);
+            }
+        }
 
         return installation;
     }
