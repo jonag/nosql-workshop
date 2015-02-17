@@ -34,7 +34,7 @@ public class InstallationService {
      */
     private void createIndexes() {
         installations.ensureIndex("{nom: \"text\"}");
-        installations.ensureIndex("{address: \"2dsphere\"}");
+        installations.ensureIndex("{location: \"2dsphere\"}");
     }
 
     /**
