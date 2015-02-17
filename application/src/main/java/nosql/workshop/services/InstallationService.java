@@ -7,7 +7,6 @@ import org.jongo.MongoCollection;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -26,6 +25,15 @@ public class InstallationService {
     @Inject
     public InstallationService(MongoDB mongoDB) throws UnknownHostException {
         this.installations = mongoDB.getJongo().getCollection(COLLECTION_NAME);
+        createIndexes();
+    }
+
+    /**
+     * Crée les différents index requis par Mongo
+     */
+    private void createIndexes() {
+        installations.ensureIndex("{nom: \"text\"}");
+        installations.ensureIndex("{address: \"2dsphere\"}");
     }
 
     /**
@@ -168,7 +176,11 @@ public class InstallationService {
      * @return les installations dans la zone géographique demandée.
      */
     public List<Installation> geosearch(double lat, double lng, double distance) {
-        // TODO codez le service
-        throw new UnsupportedOperationException();
+        Iterable<Installation> iterable = installations.find("{location: { $near :{ $geometry :{ type : \"Point\" , coordinates : ["+lng+", "+lat+"]}, $maxDistance : "+distance+"}} }").as(Installation.class);
+
+        List<Installation> installs = new ArrayList<>();
+        iterable.forEach(installs::add);
+
+        return installs;
     }
 }

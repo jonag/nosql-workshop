@@ -3,16 +3,11 @@ package nosql.workshop.batch.mongodb;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
-import org.elasticsearch.index.analysis.CharMatcher;
 
 import java.io.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 /**
@@ -59,7 +54,9 @@ public class InstallationsImporter {
 
         BasicDBObject location = new BasicDBObject();
         location.append("type", "Point");
-        location.append("coordinates", columns[8].substring(1, columns[8].length() -1).split(","));
+        String[] split = columns[8].substring(1, columns[8].length() - 1).split(",");
+        Double[] locationDouble = {Double.parseDouble(split[1]), Double.parseDouble(split[0])};
+        location.append("coordinates", locationDouble);
         installation.append("location", location);
 
         installation.append("multiCommune", columns[16].equals("Oui"));
