@@ -29,21 +29,26 @@ public class EquipementsImporter {
     private void updateInstallation(final String line) {
         String[] columns = line.split(",");
 
-        String installationId = columns[2];
+        String installationId = columns[2].trim();
 
         // create the query
         BasicDBObject queryDBObject = new BasicDBObject();
         queryDBObject.append("_id", installationId);
 
         // create the new object
-        BasicDBObject objectDBObject = new BasicDBObject();
-        objectDBObject.append("numero", columns[4]);
-        objectDBObject.append("nom", columns[5]);
-        objectDBObject.append("type", columns[7]);
-        objectDBObject.append("famille", columns[9]);
+        BasicDBObject equipementDBObject = new BasicDBObject();
+        equipementDBObject.append("numero", columns[4]);
+        equipementDBObject.append("nom", columns[5]);
+        equipementDBObject.append("type", columns[7]);
+        equipementDBObject.append("famille", columns[9]);
 
-        // push to the collection
-        installationsCollection.getCollection("equipements")
-                .update(queryDBObject, objectDBObject);
+        // create the list of the new object
+        BasicDBObject equipementsDBObject = new BasicDBObject("equipements", equipementDBObject);
+
+        // push the new object to the list
+        BasicDBObject updateDBObject = new BasicDBObject("$push", equipementsDBObject);
+
+        // update to the collection
+        installationsCollection.update(queryDBObject, updateDBObject);
     }
 }
