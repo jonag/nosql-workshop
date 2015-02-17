@@ -81,8 +81,27 @@ public class InstallationService {
      */
     // $project:{nbEquipements:{$size:'$equipements'},nom:1,equipements:1}}
     public Installation installationWithMaxEquipments() {
-        // TODO codez le service
-        return installations.findOne("{$query: {}, $orderby: {equipements.$size: -1}}").as(Installation.class);
+        Iterable<Installation> iterable = installations.aggregate(
+                "{" +
+                    "$project: {" +
+                        "numberOfEquipements: {$size: \"$equipements\"}," +
+                        "nom: 1," +
+                        "equipements: 1" +
+                    "}," +
+                "}"
+            ).and(
+                "{" +
+                    "$sort: {" +
+                        "numberOfEquipements: -1" +
+                    "}" +
+                "}"
+            ).and(
+                    "{" +
+                        "$limit : 1" +
+                    "}"
+            ).as(Installation.class);
+
+        return iterable.iterator().next();
     }
 
     /**
