@@ -78,7 +78,6 @@ public class InstallationService {
      *
      * @return l'installation avec le plus d'équipements.
      */
-    // $project:{nbEquipements:{$size:'$equipements'},nom:1,equipements:1}}
     public Installation installationWithMaxEquipments() {
         Iterable<Installation> iterable = installations.aggregate(
                 "{" +
@@ -125,7 +124,7 @@ public class InstallationService {
      * @return les résultats correspondant à la requête.
      */
     public List<Installation> search(String searchQuery) {
-        Iterable<Installation> iterable = installations.find("{nom: \""+searchQuery+"\"}").as(Installation.class);
+        Iterable<Installation> iterable = installations.find("{$text: {$search: #}}", searchQuery).as(Installation.class);
 
         List<Installation> installs = new ArrayList<>();
         iterable.forEach(installs::add);
