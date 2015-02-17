@@ -57,8 +57,7 @@ public class InstallationService {
     public Installation random() {
         long count = count();
         int random = new Random().nextInt((int) count);
-        // TODO codez le service
-        throw new UnsupportedOperationException();
+        return this.list(0, (int) count).get(random);
     }
 
     /**
