@@ -6,6 +6,7 @@ import nosql.workshop.model.stats.CountByActivity;
 import org.jongo.MongoCollection;
 
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -33,8 +34,7 @@ public class InstallationService {
      * @return l'installation correspondante, ou <code>null</code> si non trouvée.
      */
     public Installation get(String numero) {
-        // TODO codez le service
-        throw new UnsupportedOperationException();
+        return installations.findOne("{_id: \""+numero+"\"}").as(Installation.class);
     }
 
     /**
@@ -45,8 +45,9 @@ public class InstallationService {
      * @return la liste des installations.
      */
     public List<Installation> list(int page, int pageSize) {
-        // TODO codez le service
-        throw new UnsupportedOperationException();
+        List<Installation> installs = new ArrayList<>();
+        installations.find("{}", installs);
+       return installs;
     }
 
     /**
@@ -76,7 +77,7 @@ public class InstallationService {
      */
     public Installation installationWithMaxEquipments() {
         // TODO codez le service
-        throw new UnsupportedOperationException();
+        return installations.findOne("{$query: {}, $orderby: {equipements.$size: -1}}").as(Installation.class);
     }
 
     /**
