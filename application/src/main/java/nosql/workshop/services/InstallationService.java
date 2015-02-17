@@ -7,6 +7,7 @@ import org.jongo.MongoCollection;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -108,8 +109,34 @@ public class InstallationService {
      * @return le nombre d'installations par activité.
      */
     public List<CountByActivity> countByActivity() {
-        // TODO codez le service
-        throw new UnsupportedOperationException();
+        Iterable<CountByActivity> iterable = installations.aggregate(
+            "{" +
+                "$unwind: \"$equipements\"" +
+            "},"
+        ).and(
+            "{" +
+                "$unwind: \"$equipements.activites\"" +
+            "},"
+        ).and(
+            "{" +
+                "$group: {" +
+                    "_id: \"$equipements.activites\"," +
+                    "total: {$sum: 1}" +
+                "}" +
+            "}"
+        ).and(
+            "{" +
+                "$project : {" +
+                    "activite: \"$_id\"," +
+                    "total: 1" +
+                "}" +
+            "}"
+        ).as(CountByActivity.class);
+
+        List<CountByActivity> countByActivities = new ArrayList<>();
+        iterable.forEach(countByActivities::add);
+
+        return countByActivities;
     }
 
     public double averageEquipmentsPerInstallation() {
