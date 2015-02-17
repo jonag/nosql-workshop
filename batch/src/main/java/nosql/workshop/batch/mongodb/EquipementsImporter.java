@@ -1,5 +1,6 @@
 package nosql.workshop.batch.mongodb;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 
 import java.io.*;
@@ -30,6 +31,19 @@ public class EquipementsImporter {
 
         String installationId = columns[2];
 
-        // TODO codez la mise à jour de l'installation pour ajouter ses équipements
+        // create the query
+        BasicDBObject queryDBObject = new BasicDBObject();
+        queryDBObject.append("_id", installationId);
+
+        // create the new object
+        BasicDBObject objectDBObject = new BasicDBObject();
+        objectDBObject.append("numero", columns[4]);
+        objectDBObject.append("nom", columns[5]);
+        objectDBObject.append("type", columns[7]);
+        objectDBObject.append("famille", columns[9]);
+
+        // push to the collection
+        installationsCollection.getCollection("equipements")
+                .update(queryDBObject, objectDBObject);
     }
 }
