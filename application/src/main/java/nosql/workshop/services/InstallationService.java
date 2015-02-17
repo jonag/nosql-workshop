@@ -48,10 +48,10 @@ public class InstallationService {
     public List<Installation> list(int page, int pageSize) {
         Iterable<Installation> iterable = installations.find().skip(pageSize*page).limit(pageSize).as(Installation.class);
 
-        List<Installation> installations = new ArrayList<>();
-        iterable.forEach(installations::add);
+        List<Installation> installs = new ArrayList<>();
+        iterable.forEach(installs::add);
 
-        return installations;
+        return installs;
     }
 
     /**
@@ -107,8 +107,12 @@ public class InstallationService {
      * @return les résultats correspondant à la requête.
      */
     public List<Installation> search(String searchQuery) {
-        // TODO codez le service
-        throw new UnsupportedOperationException();
+        Iterable<Installation> iterable = installations.find("{nom: \""+searchQuery+"\"}").as(Installation.class);
+
+        List<Installation> installs = new ArrayList<>();
+        iterable.forEach(installs::add);
+
+        return installs;
     }
 
     /**
