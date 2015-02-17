@@ -36,10 +36,10 @@ public class ActivitesImporter {
             String equipementId = columns[2].trim();
 
             // create the query
-            BasicDBObject queryDBObject = new BasicDBObject("numero", equipementId);
+            BasicDBObject queryDBObject = new BasicDBObject("equipements.numero", equipementId);
 
             // create the new object
-            BasicDBObject activiteDBObject = new BasicDBObject("activites", columns[5]);
+            BasicDBObject activiteDBObject = new BasicDBObject("equipements.$.activites", columns[5]);
             
             // push the new object to the list
             BasicDBObject updateDBObject = new BasicDBObject("$push", activiteDBObject);
