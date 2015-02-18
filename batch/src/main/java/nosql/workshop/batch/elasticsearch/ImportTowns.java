@@ -5,24 +5,30 @@ import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import static nosql.workshop.batch.elasticsearch.util.ElasticSearchBatchUtils.checkIndexExists;
 import static nosql.workshop.batch.elasticsearch.util.ElasticSearchBatchUtils.dealWithFailures;
+import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 /**
  * Job d'import des rues de towns_paysdeloire.csv vers ElasticSearch (/towns/town)
  */
 public class ImportTowns {
     public static void main(String[] args) throws IOException {
+        // change the name of the cluster
+        Settings settings = ImmutableSettings.settingsBuilder().put("cluster.name", "teambs").build();
+        
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(ImportTowns.class.getResourceAsStream("/csv/towns_paysdeloire.csv")));
-             Client elasticSearchClient = new TransportClient().addTransportAddress(new InetSocketTransportAddress("localhost", 9300));) {
+             Client elasticSearchClient = new TransportClient(settings).addTransportAddress(new InetSocketTransportAddress("localhost", 9300))) {
 
-            checkIndexExists("towns", elasticSearchClient);
+
+            //checkIndexExists("towns", elasticSearchClient);
 
             BulkRequestBuilder bulkRequest = elasticSearchClient.prepareBulk();
 
@@ -47,6 +53,20 @@ public class ImportTowns {
         Double longitude = Double.valueOf(split[6]);
         Double latitude = Double.valueOf(split[7]);
 
-        // TODO ajoutez le code permettant d'insérer la ville
+        try {
+            bulkRequest.add(
+                    elasticSearchClient.prepareIndex("towns", "town")
+                            .setSource(
+                                    jsonBuilder()
+                                            .startObject()
+                                            .field("townName", townName)
+                                            .field("longitude", longitude)
+                                            .field("latitude", latitude)
+                                            .endObject()
+                            )
+            );
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
