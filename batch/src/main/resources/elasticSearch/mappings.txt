@@ -14,6 +14,10 @@ curl -XPOST localhost:9200/installations -d '{
 				"french_stemmer": {
 					"type": "stemmer",
 					"language": "light_french"
+				},
+				"french_snowball": {
+				    "type": "snowball",
+				    "language": "French"
 				}
 			},
 			"analyzer": {
@@ -25,7 +29,8 @@ curl -XPOST localhost:9200/installations -d '{
 					"lowercase",
 					"asciifolding",
 					"french_stop",
-					"french_stemmer"]
+					"french_stemmer",
+					"french_snowball"]
 				}
 			}
 		}
@@ -45,18 +50,18 @@ curl -XPOST localhost:9200/installations -d '{
 	}
 }'
 
-curl -XPOST localhost:9200/towns -d '{
-    "mappings" : {
-    	"town" : {
-		    "properties" : {
-                "townName" : {"type" : "string"},
-                "townNameSuggest" : {
-                    "type" : "completion",
-                    "payloads" : true
-                },
-                "postCode" : {"type" : "string"},
-				"location" : {"type" : "geo_point"}
-			}
-		}
+curl -XPUT "http://localhost:9200/towns/" -d'
+{
+  "mappings": {
+    "town": {
+      "properties": {
+        "townName": {
+          "type": "completion",
+          "index_analyzer": "simple",
+          "search_analyzer": "simple",
+          "payloads": false
+        }
+      }
     }
+  }
 }'
