@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.mongodb.QueryBuilder;
 import nosql.workshop.model.Installation;
 import nosql.workshop.model.suggest.TownSuggest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -14,6 +15,7 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.suggest.completion.CompletionSuggestion;
@@ -58,8 +60,31 @@ public class SearchService {
      * @return la listes de installations
      */
     public List<Installation> search(String searchQuery) {
-        // TODO codez le service
-        throw new UnsupportedOperationException();
+        System.out.println("search "+ searchQuery);
+
+
+        SearchResponse response = elasticSearchClient.prepareSearch(INSTALLATIONS_INDEX)
+                .setTypes(INSTALLATION_TYPE)
+                .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
+                .setQuery(QueryBuilders.queryString("search " + searchQuery))
+                .execute()
+                .actionGet();
+
+        SearchHit[] searchHits = response.getHits().getHits();
+
+        List<Installation> installations = new ArrayList<>();
+
+        if (searchHits.length > 0) {
+            for (SearchHit searchHit : searchHits) {
+                try {
+                    installations.add(objectMapper.readValue(searchHit.getSourceAsString(), Installation.class));
+                } catch (IOException e) {
+                    throw new RuntimeException();
+                }
+            }
+        }
+
+        return installations;
     }
 
     /**
