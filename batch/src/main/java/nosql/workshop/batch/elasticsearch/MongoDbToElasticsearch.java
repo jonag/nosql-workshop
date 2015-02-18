@@ -48,18 +48,9 @@ public class MongoDbToElasticsearch {
                 String objectId = (String) object.get("_id");
                 object.removeField("dateMiseAJourFiche");
 
-                try {
-                    bulkRequest.add(
-                            elasticSearchClient.prepareIndex("installations", "installation", objectId).setSource(
-                                    jsonBuilder()
-                                            .startObject()
-                                            .field(objectId, object)
-                                            .endObject()
-                            )
-                    );
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                bulkRequest.add(
+                        elasticSearchClient.prepareIndex("installations", "installation", objectId).setSource(object.toMap())
+                );
             }
             BulkResponse bulkItemResponses = bulkRequest.execute().actionGet();
 
