@@ -8,6 +8,8 @@ import nosql.workshop.model.Installation;
 import nosql.workshop.model.suggest.TownSuggest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.search.SearchHit;
 
@@ -22,18 +24,17 @@ public class SearchService {
     public static final String INSTALLATIONS_INDEX = "installations";
     public static final String INSTALLATION_TYPE = "installation";
     public static final String TOWNS_INDEX = "towns";
-    private static final String TOWN_TYPE = "town";
-
-
     public static final String ES_HOST = "es.host";
     public static final String ES_TRANSPORT_PORT = "es.transport.port";
-
+    private static final String TOWN_TYPE = "town";
     final Client elasticSearchClient;
     final ObjectMapper objectMapper;
 
     @Inject
     public SearchService(@Named(ES_HOST) String host, @Named(ES_TRANSPORT_PORT) int transportPort) {
-        elasticSearchClient = new TransportClient().addTransportAddress(new InetSocketTransportAddress(host, transportPort));
+        // change the name of the cluster
+        Settings settings = ImmutableSettings.settingsBuilder().put("cluster.name", "teambs").build();
+        elasticSearchClient = new TransportClient(settings).addTransportAddress(new InetSocketTransportAddress(host, transportPort));
 
         objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
