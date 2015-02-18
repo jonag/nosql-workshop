@@ -53,6 +53,8 @@ public class ImportTowns {
         Double longitude = Double.valueOf(split[6]);
         Double latitude = Double.valueOf(split[7]);
 
+        Double[] location = {longitude, latitude};
+
         try {
             bulkRequest.add(
                     elasticSearchClient.prepareIndex("towns", "town")
@@ -60,8 +62,7 @@ public class ImportTowns {
                                     jsonBuilder()
                                             .startObject()
                                             .field("townName", townName)
-                                            .field("longitude", longitude)
-                                            .field("latitude", latitude)
+                                            .field("location", location)
                                             .endObject()
                             )
             );
