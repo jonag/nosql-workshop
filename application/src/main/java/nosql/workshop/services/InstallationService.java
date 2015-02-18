@@ -186,7 +186,9 @@ public class InstallationService {
                 "{$text: {$search: #}},"+
                 "{score: {\"$meta\": \"textScore\"}},"
             , searchQuery)
-            //.sort("{score: {\"$meta\": \"textScore\"}}")
+            .projection("{score: {$meta: 'textScore'}}")
+            .sort("{score: {\"$meta\": \"textScore\"}}")
+            .limit(10)
             .as(Installation.class);
 
         List<Installation> installs = new ArrayList<>();
