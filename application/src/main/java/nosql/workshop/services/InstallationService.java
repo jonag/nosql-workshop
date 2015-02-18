@@ -33,7 +33,19 @@ public class InstallationService {
      * Crée les différents index requis par Mongo
      */
     private void createIndexes() {
-        installations.ensureIndex("{nom: \"text\"}");
+        installations.ensureIndex(
+                "{"+
+                        "nom: \"text\"," +
+                        "adresse.commune: \"text\"" +
+                "},"+
+                "{" +
+                    "weights: {" +
+                        "nom: 3," +
+                        "adresse.commune: 10" +
+                    "}," +
+                    "default_language: \"french\"" +
+                "}"
+        );
         installations.ensureIndex("{location: \"2dsphere\"}");
     }
 
@@ -170,7 +182,14 @@ public class InstallationService {
      * @return les résultats correspondant à la requête.
      */
     public List<Installation> search(String searchQuery) {
-        Iterable<Installation> iterable = installations.find("{$text: {$search: #}}", searchQuery).as(Installation.class);
+        Iterable<Installation> iterable = installations.find(
+                "{$text: {$search: #}},"+
+                "{score: {\"$meta\": \"textScore\"}},"
+            , searchQuery)
+            .projection("{score: {$meta: 'textScore'}}")
+            .sort("{score: {\"$meta\": \"textScore\"}}")
+            .limit(10)
+            .as(Installation.class);
 
         List<Installation> installs = new ArrayList<>();
         iterable.forEach(installs::add);
