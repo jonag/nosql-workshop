@@ -1,18 +1,22 @@
 package nosql.workshop.batch.elasticsearch;
 
-import com.mongodb.*;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
+import com.mongodb.MongoClient;
 import nosql.workshop.batch.elasticsearch.util.ElasticSearchBatchUtils;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.net.UnknownHostException;
 
 import static nosql.workshop.batch.elasticsearch.util.ElasticSearchBatchUtils.*;
+import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 /**
  * Transferts les documents depuis MongoDB vers Elasticsearch.
@@ -24,16 +28,19 @@ public class MongoDbToElasticsearch {
         MongoClient mongoClient = null;
 
         long startTime = System.currentTimeMillis();
-        try (Client elasticSearchClient = new TransportClient().addTransportAddress(new InetSocketTransportAddress(ES_DEFAULT_HOST, ES_DEFAULT_PORT));){
-            checkIndexExists("installations", elasticSearchClient);
+
+        // change the name of the cluster
+        Settings settings = ImmutableSettings.settingsBuilder().put("cluster.name", "teambs").build();
+
+        try (Client elasticSearchClient = new TransportClient(settings).addTransportAddress(new InetSocketTransportAddress(ES_DEFAULT_HOST, ES_DEFAULT_PORT))) {
+            //checkIndexExists("installations", elasticSearchClient);
 
             mongoClient = new MongoClient();
 
             // cursor all database objects from mongo db
             DBCursor cursor = ElasticSearchBatchUtils.getMongoCursorToAllInstallations(mongoClient);
 
-            // TODO prepare bulk insert to Elastic Search
-            BulkRequestBuilder bulkRequest = null;
+            BulkRequestBuilder bulkRequest = elasticSearchClient.prepareBulk();
 
             while (cursor.hasNext()) {
                 DBObject object = cursor.next();
@@ -41,7 +48,18 @@ public class MongoDbToElasticsearch {
                 String objectId = (String) object.get("_id");
                 object.removeField("dateMiseAJourFiche");
 
-                // TODO codez l'écriture du document dans ES
+                try {
+                    bulkRequest.add(
+                            elasticSearchClient.prepareIndex("installations", "installation", objectId).setSource(
+                                    jsonBuilder()
+                                            .startObject()
+                                            .field(objectId, object)
+                                            .endObject()
+                            )
+                    );
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
             BulkResponse bulkItemResponses = bulkRequest.execute().actionGet();
 
@@ -53,7 +71,6 @@ public class MongoDbToElasticsearch {
                 mongoClient.close();
             }
         }
-
 
     }
 
