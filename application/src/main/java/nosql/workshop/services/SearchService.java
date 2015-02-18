@@ -8,6 +8,7 @@ import nosql.workshop.model.Installation;
 import nosql.workshop.model.suggest.TownSuggest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
+import org.elasticsearch.action.suggest.SuggestResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.ImmutableSettings;
@@ -15,9 +16,12 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.suggest.completion.CompletionSuggestion;
+import org.elasticsearch.search.suggest.completion.CompletionSuggestionBuilder;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -31,11 +35,10 @@ public class SearchService {
     public static final String TOWNS_INDEX = "towns";
     public static final String ES_HOST = "es.host";
     public static final String ES_TRANSPORT_PORT = "es.transport.port";
-    private static final String TOWN_TYPE = "town";
     public static final String KEY_LOCATION = "location";
     public static final String FIELD_TOWN_NAME = "townName";
     public static final Double[] CARQUEFOU_COORD = new Double[]{-1.49181,47.2975};
-
+    private static final String TOWN_TYPE = "town";
     final Client elasticSearchClient;
     final ObjectMapper objectMapper;
 
@@ -74,8 +77,26 @@ public class SearchService {
     }
 
     public List<TownSuggest> suggestTownName(String townName){
-        // TODO codez le service
-        throw new UnsupportedOperationException();
+        // create the response
+        SuggestResponse suggestResponse =
+                elasticSearchClient.prepareSuggest(TOWNS_INDEX).addSuggestion(
+                        new CompletionSuggestionBuilder("town_suggest")
+                                .field(FIELD_TOWN_NAME)
+                                .text(townName)
+                ).execute().actionGet();
+
+        // get the suggestion
+        CompletionSuggestion compSuggestion = suggestResponse.getSuggest().getSuggestion("town_suggest");
+
+        // map the option into the list of town suggestion
+        List<TownSuggest> townSuggests = new ArrayList<>();
+        List<CompletionSuggestion.Entry> entryList = compSuggestion.getEntries();
+        for (CompletionSuggestion.Entry.Option option : entryList.get(0).getOptions()) {
+            String townNameOption = option.getText().string();
+            townSuggests.add(new TownSuggest(townNameOption, Arrays.asList(getTownLocation(townNameOption))));
+        }
+
+        return townSuggests;
     }
 
     public Double[] getTownLocation(String townName) {
