@@ -34,6 +34,7 @@ public class SearchService {
     private static final String TOWN_TYPE = "town";
     public static final String KEY_LOCATION = "location";
     public static final String FIELD_TOWN_NAME = "townName";
+    public static final Double[] CARQUEFOU_COORD = new Double[]{-1.49181,47.2975};
 
     final Client elasticSearchClient;
     final ObjectMapper objectMapper;
@@ -93,6 +94,9 @@ public class SearchService {
             ArrayList<Double> location = (ArrayList<Double>) result.get(KEY_LOCATION);
             coordinates[0]= location.get(0);
             coordinates[1]= location.get(1);
+        }else{
+            //Si la recherche ne correspond à aucune ville
+            coordinates = CARQUEFOU_COORD;
         }
         return coordinates;
     }
